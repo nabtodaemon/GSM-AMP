@@ -22,8 +22,6 @@
 #include "platforms/Ublox_gsm_click_4/uart.h"
 #include <modules/list/utlist.h>
 
-char AtCmdBuff[256]; //buffer to store AT data
-
 
 typedef struct socketListElement {
     nabto_socket_t socket;
