@@ -16,7 +16,7 @@ int  Send2Gsm(char *);
 void DelayS(int);
 void GetString(char *, char, int *);
 
-char AtCmdBuff[256]; //buffer to store AT data
+
 	
 HANDLE hComm;                           // Handle to the Serial port
 //char   ComPortName[] = "COM3";			// Name of the Serial port(May Change) to be opened,

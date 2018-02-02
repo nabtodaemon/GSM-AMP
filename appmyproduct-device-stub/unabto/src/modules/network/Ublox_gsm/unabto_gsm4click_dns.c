@@ -12,7 +12,6 @@
 //#include <modules/network/Ublox_gsm/unabto_gsm4click.h>
 #include <unabto/unabto_external_environment.h>
 #include <platforms/Ublox_gsm_click_4/uart.h>
-
 void nabto_dns_resolve(const char* id)
 {
 }

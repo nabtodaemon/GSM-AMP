@@ -22,6 +22,8 @@
 #include "platforms/Ublox_gsm_click_4/uart.h"
 #include <modules/list/utlist.h>
 
+char AtCmdBuff[256]; //buffer to store AT data
+
 
 typedef struct socketListElement {
     nabto_socket_t socket;
@@ -106,17 +108,18 @@ void nabto_close_socket(nabto_socket_t* sock)
 ssize_t nabto_read(nabto_socket_t sock, uint8_t* buf, size_t len, uint32_t* addr, uint16_t* port)
 { 
 
-	int i = 0;
+	int i = 0, llen = 0;
 	long x;
 	char temp[512];
 	char lenght[10];
 	nabto_endpoint ep;
-	sprintf(AtCmdBuff, "AT+USORF=%d,512\r\n", sock); //GSM read 
+	sprintf(AtCmdBuff, "AT+USORF=%d,1024\r\n", sock); //GSM read 
 	Send2Gsm(AtCmdBuff);
 	len = 0; //init
 	
-	if (strlen(SerialBuffer) < 30) { 	
-		return len; }	
+	if (strlen(SerialBuffer) < 50) { 	
+		return len; 
+	}	
 		GetString(temp, '"', &i);		
 		x = inet_addr(temp);
 		*addr = ntohl(x);		
@@ -153,6 +156,13 @@ ssize_t nabto_read(nabto_socket_t sock, uint8_t* buf, size_t len, uint32_t* addr
 		}		
 		ep.addr = *addr;
 		ep.port = *port;
+		
+		while (strstr(SerialBuffer, "+UUSORF:") != NULL) {
+			printf("^^^^^^^^^^^^^^DISCARD^^^^^^^^\n");
+			sprintf(AtCmdBuff, "AT+USORF=%d, 1024\r\n", sock); //GSM read 
+			Send2Gsm(AtCmdBuff);			
+		}
+
 	return len;
 }
 
@@ -168,6 +178,8 @@ ssize_t nabto_read(nabto_socket_t sock, uint8_t* buf, size_t len, uint32_t* addr
 					break;
 				}
 			}
+			if (startstr && (SerialBuffer[j] == '\0' || SerialBuffer[j] == '\n' || SerialBuffer[j] == '\r'))
+				endstr = j;
 		}
 		*startpos = j;
 		if (endstr > startstr)
@@ -184,10 +196,16 @@ ssize_t nabto_write(nabto_socket_t sock, const uint8_t* buf, size_t len, uint32_
    sprintf(address, PRIip, MAKE_IP_PRINTABLE(addr));
    sprintf(AtCmdBuff, "AT+USOST=%d,\"%s\",%d,%d\r\n", sock, address, port, len);  //GSM write 
    Send2Gsm(AtCmdBuff);
-   DelayS(500);
+   NABTO_LOG_TRACE(("\n%s,\"", AtCmdBuff+2));
+   //printf("Sending: ");
+   for (i = 0; i < len; i++)
+       printf("%02x", toupper(buf[i]));
+   printf("\"\n");
+   DelayS(50);
    for (i = 0; i < len; i++) {
 	   uart_write(1, buf[i]);
    }
+   NABTO_LOG_TRACE(("Wrote %u bytes to UART.", (int)len));
    ReadGsm();
    ep.addr = addr;
    ep.port = port;

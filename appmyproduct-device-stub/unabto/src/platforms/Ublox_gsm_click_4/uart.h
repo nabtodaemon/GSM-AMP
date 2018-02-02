@@ -67,9 +67,7 @@ int ReadGsm();
 
 void GetString(char *, char, int *);
 
-//int  GetSocketNo();
-
-void GetStringIP(char *addr, char delimiter, int *startpos);
+int  GetSocketNo();
 
 #ifdef __cplusplus
 } //extern "C"

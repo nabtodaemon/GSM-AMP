@@ -32,18 +32,20 @@ DWORD NoBytesRead;                      // Bytes read by ReadFile()
 int   ResponseLength = 0;
 static bool low_level_read_from_uart(uart_channel* uartChannel);
 static uart_channel* look_up_uart_channel(uint8_t channel);
+void GetStringIP(char *addr, char delimiter, int *startpos);
+
 static uart_channel channels[UART_NUMBER_OF_CHANNELS];
 
 void uart_initialize(uint8_t channel, const void* name, uint32_t baudrate, uint8_t databits, uart_parity parity, uart_stopbits stopbits)
 { 
   const char* pipeIdentifier = "\\\\.\\pipe\\";
   int pipeIdentifierLength = strlen(pipeIdentifier);
-    
+  char nameBuffer[1024];  
+  //return;  
   uart_channel* uartChannel = look_up_uart_channel(channel); 
   queue_init(&uartChannel->receiveQueue, uartChannel->receiveQueueBuffer, sizeof(uartChannel->receiveQueueBuffer)); 
 
 /*
-  char nameBuffer[1024];
   if (memcmp(pipeIdentifier, name, pipeIdentifierLength) != 0 && strlen(name) > 4 && ((const char*)name)[0] != '\\') // it's a com port higher than 9
   {
     sprintf_s(nameBuffer, sizeof(nameBuffer), "\\\\.\\%s", name);
@@ -175,7 +177,7 @@ void uart_initialize(uint8_t channel, const void* name, uint32_t baudrate, uint8
   }
  
 
-    //char AtCmdBuff[256];
+    char AtCmdBuff[256];
 	Send2Gsm("ATE0\r\n");					//stop echo
 	DelayS(100);
 	Send2Gsm("AT+UDCONF=1,1\r\n");			//enable hex mode
@@ -208,7 +210,7 @@ int Send2Gsm(char *lpBuffer)   //UART write
 	else
 		NABTO_LOG_TRACE(("Error %d in Writing to Serial Port", GetLastError()));
 
-	DelayS(1000);
+	DelayS(50);
 
 	j=ReadGsm();
 	return j;
@@ -371,7 +373,7 @@ void uart_write_buffer(uint8_t channel, const void* buffer, uint16_t length)
     NABTO_LOG_WARN(("Unable to write all bytes to the UART (only %u out of %u was written)!", (int)bytesWritten, (int)length));
   }
 
-  NABTO_LOG_TRACE(("Wrote %u bytes to UART.", (int)bytesWritten));
+  //NABTO_LOG_TRACE(("Wrote %u bytes to UART.", (int)bytesWritten));
 }
 
 void uart_flush_receiver(uint8_t channel)
