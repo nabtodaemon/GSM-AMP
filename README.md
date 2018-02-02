@@ -1,1 +1,4 @@
 # GSM-AMP
+
+
+cmake -DUNABTO_PLATFORM_UBLOX=1 ..
